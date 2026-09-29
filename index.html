@@ -1,73 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>License Plate Game</title>
+    <meta name="theme-color" content="#1C1D24">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="img/icon-192.png">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <!-- iOS home-screen app: full screen, content runs under the status bar (safe-area padding in style.css) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- apply a saved light/dark choice before first paint, so the page doesn't flash the other theme -->
+    <script>
+        try {
+            const theme = localStorage.getItem("Theme");
+            if (theme) document.documentElement.dataset.theme = theme;
+        } catch {}
+    </script>
 </head>
 <body>
-    <div class="container">
-    <h1>License Plate Game</h1>
-    <h3><span class="counter">50</span> States Remaining</h3>
-    <button class="reset-button">Reset</button>
-    </div>
-    <div class="plate-container">
-        <div class="license-plate" data-state="Alabama">AL</div>
-        <div class="license-plate" data-state="Alaska">AK</div>
-        <div class="license-plate" data-state="Arizona">AZ</div>
-        <div class="license-plate" data-state="Arkansas">AR</div>
-        <div class="license-plate" data-state="California">CA</div>
-        <div class="license-plate" data-state="Colorado">CO</div>
-        <div class="license-plate" data-state="Connecticut">CT</div>
-        <div class="license-plate" data-state="Delaware">DE</div>
-        <div class="license-plate" data-state="Florida">FL</div>
-        <div class="license-plate" data-state="Georgia">GA</div>
-        <div class="license-plate" data-state="Hawaii">HI</div>
-        <div class="license-plate" data-state="Idaho">ID</div>
-        <div class="license-plate" data-state="Illinois">IL</div>
-        <div class="license-plate" data-state="Indiana">IN</div>
-        <div class="license-plate" data-state="Iowa">IA</div>
-        <div class="license-plate" data-state="Kansas">KS</div>
-        <div class="license-plate" data-state="Kentucky">KY</div>
-        <div class="license-plate" data-state="Louisiana">LA</div>
-        <div class="license-plate" data-state="Maine">ME</div>
-        <div class="license-plate" data-state="Maryland">MD</div>
-        <div class="license-plate" data-state="Massachusetts">MA</div>
-        <div class="license-plate" data-state="Michigan">MI</div>
-        <div class="license-plate" data-state="Minnesota">MN</div>
-        <div class="license-plate" data-state="Mississippi">MS</div>
-        <div class="license-plate" data-state="Missouri">MO</div>
-        <div class="license-plate" data-state="Montana">MT</div>
-        <div class="license-plate" data-state="Nebraska">NE</div>
-        <div class="license-plate" data-state="Nevada">NV</div>
-        <div class="license-plate" data-state="New Hampshire">NH</div>
-        <div class="license-plate" data-state="New Jersey">NJ</div>
-        <div class="license-plate" data-state="New Mexico">NM</div>
-        <div class="license-plate" data-state="New York">NY</div>
-        <div class="license-plate" data-state="North Carolina">NC</div>
-        <div class="license-plate" data-state="North Dakota">ND</div>
-        <div class="license-plate" data-state="Ohio">OH</div>
-        <div class="license-plate" data-state="Oklahoma">OK</div>
-        <div class="license-plate" data-state="Oregon">OR</div>
-        <div class="license-plate" data-state="Pennsylvania">PA</div>
-        <div class="license-plate" data-state="Rhode Island">RI</div>
-        <div class="license-plate" data-state="South Carolina">SC</div>
-        <div class="license-plate" data-state="South Dakota">SD</div>
-        <div class="license-plate" data-state="Tennessee">TN</div>
-        <div class="license-plate" data-state="Texas">TX</div>
-        <div class="license-plate" data-state="Utah">UT</div>
-        <div class="license-plate" data-state="Vermont">VT</div>
-        <div class="license-plate" data-state="Virginia">VA</div>
-        <div class="license-plate" data-state="Washington">WA</div>
-        <div class="license-plate" data-state="West Virginia">WV</div>
-        <div class="license-plate" data-state="Wisconsin">WI</div>
-        <div class="license-plate" data-state="Wyoming">WY</div>
-    </div>
+    <!-- light/dark switch; icon and label set by applyTheme() in app.js -->
+    <button id="theme-btn" class="icon-btn"></button>
+
+    <main class="container">
+        <h1 id="title-text">License Plate Game</h1>
+
+        <!-- stays pinned to the top while the plates scroll -->
+        <div class="progress-sticky">
+            <p id="progress-text"><span id="found-count">0</span> / <span id="total-count">50</span> found</p>
+            <div class="progress" aria-hidden="true">
+                <div id="progress-inner" class="progress-inner"></div>
+            </div>
+        </div>
+
+        <!-- one button per state, built by buildPlates() in app.js -->
+        <div id="plates" class="plate-grid"></div>
+
+        <button id="reset-btn" class="secondary-btn">Reset trip…</button>
+    </main>
+
+    <!-- milestone messages from showToast() in app.js -->
+    <p id="toast" class="toast" role="status" aria-live="polite"></p>
 
     <footer>
-        <p>HSLD Games</p>
+        <p>HSLD Games · <a href="https://www.paypal.com/donate/?business=3HCPKJZKV8XQG&amp;no_recurring=1&amp;item_name=--+Support+HSLD+Games+--&amp;currency_code=USD" target="_blank" rel="noopener">Tip jar</a></p>
     </footer>
+
+    <!-- Reset confirmation, opened from Reset trip; count filled in by openReset() -->
+    <div id="resetScreen" class="overlay" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
+        <div class="panel">
+            <p id="reset-title" class="panel-title">Start a new trip?</p>
+            <p id="reset-text"></p>
+            <button id="reset-confirm">Reset</button>
+            <button id="reset-cancel" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

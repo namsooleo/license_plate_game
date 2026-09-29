@@ -1,127 +1,411 @@
-html, body {
-    font-family: Arial, sans-serif;
-    padding: 0;
+/* dark is the Math Dash palette, so the HSLD Games titles read as a set */
+:root {
+    --bg: #1C1D24;
+    --track: #34363F;
+    --text: #E8EDF2;
+    --muted: #8E96A3;
+    --found: #3DDC97;
+    --btn: #FFC247;
+    --btn-hover: #FFD57A;
+    --btn-text: #1C1D24;
+    --scrim: rgba(0, 0, 0, 0.6);
+    /* iOS home-screen app draws the clock in white (black-translucent), so the strip behind it stays dark in both themes */
+    --status-bg: #1C1D24;
+}
+
+/* light: the phone's setting unless the theme button picked dark, or the theme button picked light */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --bg: #F4F5F7;
+        --track: #E1E4E9;
+        --text: #1C1D24;
+        --muted: #5C6470;
+        --scrim: rgba(0, 0, 0, 0.35);
+    }
+}
+
+:root[data-theme="light"] {
+    --bg: #F4F5F7;
+    --track: #E1E4E9;
+    --text: #1C1D24;
+    --muted: #5C6470;
+    --scrim: rgba(0, 0, 0, 0.35);
+}
+
+/* the strip behind the status bar; zero height outside the home-screen app */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    z-index: 2;
+    background-color: var(--status-bg);
+}
+
+body {
     margin: 0;
-    background-color: #353535;
-    color: #ffffff;
-}
-
-.container {
-    text-align: center;
-}
-
-.container h1 {
-    text-align: center;
-    margin: 5px;
-}
-
-.container h3 {
-    text-align: center;
-    margin: 5px 0 10px 0;
-}
-
-.container .counter {
-    font-weight: bold;
-    color: #fca311;
-}
-
-.container button {
-    display: inline-block;
-    outline: 0;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 2px solid #ff4742;
-    color: #ff4742;
-    background: 0 0;
-    padding: 8px;
-    box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1.5px 0px;
-    font-weight: 800;
-    font-size: 12px;
-    height: 32px;
-}
-
-/* Button hover styles */
-@media (hover: hover) {
-    button:hover {
-        background-color: #ff4742;
-        color: #fff;
-    }
-}
-
-.plate-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    padding: 10px;
-}
-
-@media (min-width: 900px) {
-    .plate-container {
-        grid-template-columns: repeat(5, 1fr);
-    }
-    .container h1 {
-        font-size: 3em;
-    }
-}
-
-.license-plate {
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* keep clear of the notch and home bar (viewport-fit=cover in index.html) */
+    /* no bottom padding: the footer handles the home bar itself */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    box-sizing: border-box;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Asap, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+/* iOS home-screen app: 100dvh comes up short by the top safe-area inset (black-translucent status bar),
+   leaving an empty band under the footer. Only 100lvh is the full screen there. */
+@media (display-mode: standalone) {
+    body {
+        min-height: 100lvh;
+    }
+}
+
+/* fills the space above the footer, so the footer sits at the bottom of a short page */
+.container {
+    flex: 1;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+#title-text {
+    margin: 16px 0 4px;
+    font-size: 1.8em;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+#progress-text {
+    margin: 0 0 8px;
+    font-size: 1.1em;
+    color: var(--muted);
+}
+
+#found-count {
+    font-weight: bold;
+    color: var(--text);
+}
+
+/* all 50 found */
+#progress-text.complete,
+#progress-text.complete #found-count {
+    color: var(--found);
+}
+
+/* count + bar stick below the notch; solid background so plates scroll under it */
+.progress-sticky {
+    position: sticky;
+    top: env(safe-area-inset-top);
+    z-index: 1;
+    width: 100%;
+    padding: 8px 0 14px;
+    background-color: var(--bg);
+}
+
+.progress {
+    width: 100%;
+    height: 6px;
+    background: var(--track);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+/* full-width gradient, uncovered by clip-path in render() */
+.progress-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--found), var(--btn));
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.3s ease;
+}
+
+/* 5 across on a phone, up to 8 on a wide screen */
+.plate-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+}
+
+.plate {
+    position: relative;
+    min-height: 74px;
+    padding: 6px 3px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 1.5em;
-    font-weight: bold;
-    background-color: #e0e0e0;
-    color: #1a1a1a;
-    border: 3px solid #1a1a1a;
-    border-radius: 8px;
-    padding: 10px;
-    height: 70px;
-    cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
+    gap: 2px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background-color: var(--track);
+    color: var(--text);
+    transition: background-color 0.2s ease;
 }
 
-/* Hover effects on images */
-@media (hover: hover) {
-    .license-plate:hover {
-        transform: scale(1.05);
-        background-color: #ccc;
+.plate-abbr {
+    font-size: 2.3em;
+    line-height: 1.1;
+}
+
+/* long names ("Massachusetts") break onto a second line instead of overflowing the tile */
+.plate-name {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--muted);
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.plate[aria-pressed="true"] {
+    background-color: var(--found);
+    color: var(--btn-text);
+}
+
+.plate[aria-pressed="true"] .plate-name {
+    color: inherit;
+}
+
+.plate[aria-pressed="true"]::after {
+    content: "✓";
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    font-size: 0.75em;
+}
+
+/* bounce when a plate is marked found */
+.plate.pop {
+    animation: pop 0.3s ease-out;
+}
+
+@keyframes pop {
+    40% {
+        transform: scale(1.15);
     }
 }
 
-/* Clicked/Found state */
-.license-plate.clicked {
-    position: relative;
-    background-color: #2c2c2c;
-    color: #6fcf97;  /* your soft green */
-    opacity: 0.6;
-    font-weight: 700;
-    /* remove text-decoration */
-    text-decoration: none;
+.plate:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
 }
 
-.license-plate.clicked::after {
-    content: "";
+/* desktop: bigger tiles, 10 across, so the board fills the screen instead of sitting small in the middle */
+@media (min-width: 900px) {
+    .container {
+        max-width: 960px;
+    }
+
+    #title-text {
+        margin-top: 28px;
+        font-size: 2.4em;
+    }
+
+    .plate-grid {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 10px;
+    }
+
+    .plate {
+        min-height: 84px;
+        border-radius: 8px;
+    }
+
+    .plate-abbr {
+        font-size: 2em;
+    }
+
+    .plate-name {
+        font-size: 0.8em;
+    }
+}
+
+/* theme switch: top-right corner, clear of the notch; scrolls away with the title */
+.icon-btn {
     position: absolute;
-    top: 50%;
-    left: 5%;
-    right: 5%;
-    height: 2px;
-    background-color: #6fcf97; /* same color as text */
-    transform: translateY(-50%);
+    top: calc(env(safe-area-inset-top) + 12px);
+    right: calc(env(safe-area-inset-right) + 12px);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 2px solid var(--muted);
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--muted);
+}
+
+.icon-btn svg {
+    display: block;
+    margin: auto;
+}
+
+/* primary action in the reset dialog */
+#reset-confirm {
+    border: none;
+    background-color: var(--btn);
+    color: var(--btn-text);
+}
+
+/* outlined, so it reads as secondary */
+.secondary-btn {
+    height: 40px;
+    border: 2px solid var(--muted);
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--muted);
+    font-size: 1em;
+}
+
+#reset-btn {
+    width: 200px;
+    margin: 28px 0 16px;
+}
+
+/* pill above the footer; fades in and out */
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + 56px);
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background-color: var(--btn);
+    color: var(--btn-text);
+    font-weight: bold;
+    font-size: 1.1em;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, 12px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.confetti {
+    position: fixed;
+    z-index: 3;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
 }
 
-/* Always show state text when screen size is less than 900px */
-@media (max-width: 720px) {
-    .license-plate::after {
-        opacity: 1; /* Always visible */
+@media (prefers-reduced-motion: reduce) {
+    .plate.pop {
+        animation: none;
+    }
+
+    .progress-inner,
+    .toast {
+        transition: none;
     }
 }
 
+/* one gap below the text: the home bar inset, or 12px where there's no home bar */
 footer {
-    bottom: 10px;
-    width: 100%;
+    padding: 12px 0 max(12px, env(safe-area-inset-bottom));
     text-align: center;
     font-style: italic;
     font-size: 0.8em;
+    color: var(--muted);
+}
+
+footer p {
+    margin: 0;
+}
+
+footer a {
+    color: inherit;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background-color: var(--scrim);
+    z-index: 2;
+}
+
+/* the display: flex above would otherwise override hidden */
+.overlay[hidden] {
+    display: none;
+}
+
+.panel {
+    box-sizing: border-box;
+    max-width: 420px;
+    margin: 16px;
+    padding: 20px;
+    border: 1px solid var(--track);
+    border-radius: 8px;
+    background-color: var(--bg);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.panel p {
+    margin: 8px 0;
+}
+
+.panel-title {
+    margin: 0 0 12px;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.overlay button {
+    display: block;
+    width: 200px;
+    height: 44px;
+    margin: 20px auto 0;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+
+.overlay button + button {
+    margin-top: 10px;
+}
+
+/* touch screens keep :hover stuck on the last tapped button */
+@media (hover: hover) {
+    .plate:hover {
+        border-color: var(--muted);
+    }
+
+    #reset-confirm:hover {
+        background-color: var(--btn-hover);
+    }
+
+    .secondary-btn:hover,
+    .icon-btn:hover {
+        border-color: var(--text);
+        color: var(--text);
+    }
 }
