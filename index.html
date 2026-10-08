@@ -29,7 +29,12 @@
     <button id="theme-btn" class="icon-btn"></button>
 
     <main class="container">
-        <h1 id="title-text">License Plate Game</h1>
+        <!-- drawn as a plate: rim, bolt holes and a top line in style.css; screen readers get "License Plate Game" -->
+        <h1 id="title-text" class="title-plate">
+            <span class="title-top" aria-hidden="true">Road Trip · USA</span>
+            <span class="title-main">License Plate</span>
+            <span class="title-sub">Game</span>
+        </h1>
 
         <!-- stays pinned to the top while the plates scroll -->
         <div class="progress-sticky">
