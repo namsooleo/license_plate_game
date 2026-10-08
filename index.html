@@ -27,6 +27,7 @@
 <body>
     <!-- light/dark switch; icon and label set by applyTheme() in app.js -->
     <button id="theme-btn" class="icon-btn"></button>
+    <button id="help-btn" class="icon-btn" aria-label="How to play">?</button>
 
     <main class="container">
         <!-- drawn as a plate: rim, bolt holes and a top line in style.css; screen readers get "License Plate Game" -->
@@ -62,8 +63,22 @@
         <div class="panel">
             <p id="reset-title" class="panel-title">Start a new trip?</p>
             <p id="reset-text"></p>
-            <button id="reset-confirm">Reset</button>
+            <button id="reset-confirm" class="primary-btn">Reset</button>
             <button id="reset-cancel" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- How to Play, opened from the ? and shown once on the first visit -->
+    <div id="helpScreen" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+        <div class="panel help-panel">
+            <p id="help-title" class="panel-title">How to Play</p>
+            <p>Spot license plates from all 50 states on your trip.</p>
+            <ul>
+                <li>Tap a state when you see its plate. Tap it again to undo.</li>
+                <li>Your trip is saved on this device, so you can close the app and pick up where you left off.</li>
+                <li><b>Reset trip</b> at the bottom clears the board for the next trip.</li>
+            </ul>
+            <button id="help-close" class="primary-btn">Got it</button>
         </div>
     </div>
 

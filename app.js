@@ -23,6 +23,7 @@ const foundCount = document.getElementById("found-count");
 const progressText = document.getElementById("progress-text");
 const progressInner = document.getElementById("progress-inner");
 const resetScreen = document.getElementById("resetScreen");
+const helpScreen = document.getElementById("helpScreen");
 const resetText = document.getElementById("reset-text");
 const toast = document.getElementById("toast");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -188,6 +189,16 @@ function resetTrip() {
     closeReset();
 }
 
+function openHelp() {
+    helpScreen.hidden = false;
+    document.getElementById("help-close").focus();
+}
+
+function closeHelp() {
+    helpScreen.hidden = true;
+    document.getElementById("help-btn").focus();
+}
+
 plateGrid.addEventListener("click", (event) => {
     const plate = event.target.closest(".plate");
     if (plate) togglePlate(plate);
@@ -198,18 +209,33 @@ prefersLight.addEventListener("change", applyTheme);
 document.getElementById("reset-btn").addEventListener("click", openReset);
 document.getElementById("reset-confirm").addEventListener("click", resetTrip);
 document.getElementById("reset-cancel").addEventListener("click", closeReset);
+document.getElementById("help-btn").addEventListener("click", openHelp);
+document.getElementById("help-close").addEventListener("click", closeHelp);
 
 // tap outside the panel or press Escape to cancel
 resetScreen.addEventListener("click", (event) => {
     if (event.target === resetScreen) closeReset();
 });
+helpScreen.addEventListener("click", (event) => {
+    if (event.target === helpScreen) closeHelp();
+});
 document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !resetScreen.hidden) closeReset();
+    if (event.key !== "Escape") return;
+    if (!resetScreen.hidden) closeReset();
+    if (!helpScreen.hidden) closeHelp();
 });
 
 document.getElementById("total-count").textContent = STATES.length;
 buildPlates();
 render();
 applyTheme();
+
+// first visit: show How to Play once. Not Math Dash's "Help_Seen": the HSLD games can share one origin's storage
+try {
+    if (!localStorage.getItem("Plates_Help_Seen")) {
+        openHelp();
+        localStorage.setItem("Plates_Help_Seen", "1");
+    }
+} catch {}
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
